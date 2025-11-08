@@ -1,4 +1,4 @@
-import { IsInt, IsNotEmpty, IsOptional, IsString, IsUrl, MaxLength } from 'class-validator';
+import { IsInt, IsNotEmpty, IsOptional, IsString, IsUrl, IsUUID, MaxLength } from 'class-validator';
 
 export class CreateBookDto {
   @IsString()
@@ -16,6 +16,8 @@ export class CreateBookDto {
   pictureUrl?: string;
 
   @IsInt()
-  @IsOptional()
-  authorId?: number;
+  yearPublished!: number;
+
+  @IsUUID()
+  authorId!: string;
 }

@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Like, Repository } from 'typeorm';
-import { BookEntity } from './entities/book.entity';
+import { BookEntity, BookId } from './entities/book.entity';
 import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookDto } from './dto/update-book.dto';
 
@@ -18,8 +18,14 @@ export class BooksService {
   ) {}
 
   async create(dto: CreateBookDto): Promise<BookEntity> {
-    const book = this.repo.create(dto);
-    return this.repo.save(book);
+    const entity = this.repo.create({
+      title: dto.title,
+      description: dto.description,
+      pictureUrl: dto.pictureUrl,
+      yearPublished: dto.yearPublished,
+      author: { id: dto.authorId } as any,
+    });
+    return this.repo.save(entity);
   }
 
   async findAll(opts?: { page?: number; limit?: number; search?: string }): Promise<Paginated<BookEntity>> {
@@ -32,27 +38,38 @@ export class BooksService {
     const [data, total] = await this.repo.findAndCount({
       where,
       order: { title: 'ASC', id: 'ASC' },
+      relations: { author: true },
       skip: (page - 1) * limit,
       take: limit,
     });
 
     return { data, meta: { total, page, limit } };
-    // Note: buyers count will be provided by the sales domain later.
   }
 
-  async findOne(id: number): Promise<BookEntity> {
-    const book = await this.repo.findOne({ where: { id } });
+  async findOne(id: BookId): Promise<BookEntity> {
+    const book = await this.repo.findOne({ where: { id }, relations: { author: true } });
     if (!book) throw new NotFoundException(`Book ${id} not found`);
     return book;
   }
 
-  async update(id: number, dto: UpdateBookDto): Promise<BookEntity> {
+  async update(id: BookId, dto: UpdateBookDto): Promise<BookEntity> {
     const existing = await this.findOne(id);
-    const merged = this.repo.merge(existing, dto);
+
+    const patch: Partial<BookEntity> & { author?: any } = {
+      title: dto.title,
+      description: dto.description,
+      pictureUrl: dto.pictureUrl,
+      yearPublished: dto.yearPublished,
+    };
+    if (dto.authorId !== undefined) {
+      patch.author = dto.authorId ? ({ id: dto.authorId } as any) : null;
+    }
+
+    const merged = this.repo.merge(existing, patch);
     return this.repo.save(merged);
   }
 
-  async remove(id: number): Promise<void> {
+  async remove(id: BookId): Promise<void> {
     const res = await this.repo.delete(id);
     if (!res.affected) throw new NotFoundException(`Book ${id} not found`);
   }

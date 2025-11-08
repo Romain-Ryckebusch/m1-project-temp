@@ -1,4 +1,4 @@
-import { IsInt, IsOptional, IsString, IsUrl, MaxLength } from 'class-validator';
+import { IsInt, IsOptional, IsString, IsUrl, IsUUID, MaxLength } from 'class-validator';
 
 export class UpdateBookDto {
   @IsString()
@@ -17,5 +17,9 @@ export class UpdateBookDto {
 
   @IsInt()
   @IsOptional()
-  authorId?: number;
+  yearPublished?: number;
+
+  @IsUUID()
+  @IsOptional()
+  authorId?: string;
 }

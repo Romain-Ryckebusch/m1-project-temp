@@ -5,6 +5,7 @@ import {
   Get,
   Param,
   ParseIntPipe,
+  ParseUUIDPipe,
   Patch,
   Post,
   Query,
@@ -13,6 +14,7 @@ import { BooksService } from './book.service';
 import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookDto } from './dto/update-book.dto';
 import { BookEntity } from './entities/book.entity';
+import type { BookId } from './entities/book.entity';
 
 @Controller('books')
 export class BooksController {
@@ -37,17 +39,20 @@ export class BooksController {
   }
 
   @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: number) {
+  findOne(@Param('id', new ParseUUIDPipe({ version: '4' })) id: BookId) {
     return this.svc.findOne(id);
   }
 
   @Patch(':id')
-  update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateBookDto) {
+  update(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: BookId,
+    @Body() dto: UpdateBookDto,
+  ) {
     return this.svc.update(id, dto);
   }
 
   @Delete(':id')
-  remove(@Param('id', ParseIntPipe) id: number) {
+  remove(@Param('id', new ParseUUIDPipe({ version: '4' })) id: BookId) {
     return this.svc.remove(id);
   }
 }

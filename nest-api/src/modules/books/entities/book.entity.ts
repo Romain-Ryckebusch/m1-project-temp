@@ -3,11 +3,16 @@ import {
   CreateDateColumn,
   Entity,
   Index,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { AuthorEntity } from '../../authors/author.entity';
+import { SellsEntity } from '../../clients/entities/sells.entity';
 
-export type BookId = number;
+export type BookId = string;
 
 @Entity({ name: 'books' })
 export class BookEntity {
@@ -15,19 +20,30 @@ export class BookEntity {
   id!: BookId;
 
   @Index()
-  @Column({ type: 'varchar', length: 255 })
+  @Column({ length: 255 })
   title!: string;
 
   @Column({ type: 'text', nullable: true })
   description?: string;
 
-  // image URL required by the brief
-  @Column({ type: 'varchar', length: 1024, nullable: true })
+  @Column({ length: 1024, nullable: true })
   pictureUrl?: string;
 
-  // simple FK column for now; can be replaced with a relation later
-  @Column({ type: 'integer', nullable: true })
-  authorId?: number;
+  // required by BookModel
+  @Column({ type: 'int' })
+  yearPublished!: number;
+
+  // relation needed by repo: relations: { author: true }
+  @ManyToOne(() => AuthorEntity, (author) => author.books, {
+    nullable: false,
+    onDelete: 'RESTRICT',
+  })
+  @JoinColumn({ name: 'authorId' })
+  author!: AuthorEntity;
+
+  // satisfy SellsEntity’s inverse side: (book) => book.sells
+  @OneToMany(() => SellsEntity, (sell) => sell.book)
+  sells!: SellsEntity[];
 
   @CreateDateColumn()
   createdAt!: Date;
@@ -35,3 +51,6 @@ export class BookEntity {
   @UpdateDateColumn()
   updatedAt!: Date;
 }
+
+// keep compatibility if something imports { Book }
+export { BookEntity as Book };
