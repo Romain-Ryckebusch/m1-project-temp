@@ -1,34 +1,37 @@
 import {
-  BaseEntity,
   Column,
+  CreateDateColumn,
   Entity,
-  JoinColumn,
-  ManyToOne, OneToMany,
+  Index,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
-import { AuthorEntity, type AuthorId } from '../../authors/author.entity';
-import { SellsEntity } from '../../clients/entities/sells.entity';
 
-export type BookId = string & { __brand: 'Book' };
+export type BookId = number;
 
-@Entity('books')
-export class BookEntity extends BaseEntity {
-  @PrimaryGeneratedColumn('uuid')
-  id: BookId;
+@Entity({ name: 'books' })
+export class BookEntity {
+  @PrimaryGeneratedColumn()
+  id!: BookId;
 
-  @Column({ name: 'title', type: 'varchar' })
-  title: string;
+  @Index()
+  @Column({ type: 'varchar', length: 255 })
+  title!: string;
 
-  @Column({ name: 'year_published', type: 'int' })
-  yearPublished: number;
+  @Column({ type: 'text', nullable: true })
+  description?: string;
 
-  @Column({ name: 'author_id', type: 'uuid' })
-  authorId: AuthorId;
+  // image URL required by the brief
+  @Column({ type: 'varchar', length: 1024, nullable: true })
+  pictureUrl?: string;
 
-  @ManyToOne(() => AuthorEntity, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'author_id' })
-  author: AuthorEntity;
+  // simple FK column for now; can be replaced with a relation later
+  @Column({ type: 'integer', nullable: true })
+  authorId?: number;
 
-  @OneToMany(() => SellsEntity, (sells:SellsEntity) => sells.book)
-  sells: SellsEntity[];
+  @CreateDateColumn()
+  createdAt!: Date;
+
+  @UpdateDateColumn()
+  updatedAt!: Date;
 }
