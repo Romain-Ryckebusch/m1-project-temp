@@ -1,0 +1,60 @@
+import { Injectable } from '@nestjs/common';
+import { ClientRepository } from './client.repository';
+import { ClientModel } from './models/clients.model';
+import { CreateClientModel } from './models/createClient.model';
+import { EditClientModel } from './models/editClient.model';
+import { SellsRepository } from './sells.repository';
+import { CreateSellModel } from './models/createSell.model';
+import { AllClientsModel } from './models/allClients.model';
+import { ClientEntity } from './entities/client.entity';
+import { SellsEntity } from './entities/sells.entity';
+
+@Injectable()
+export class ClientService {
+  constructor(
+    private readonly clientRepository: ClientRepository,
+    private readonly sellsRepository: SellsRepository,
+  ) {}
+
+  public async getAllClients(): Promise<AllClientsModel[]> {
+    const clients: AllClientsModel[] =
+      await this.clientRepository.getAllClients();
+
+    return clients.map((c: ClientEntity) => ({
+      ...c,
+      books_bought: c.books_bought?.map((s) => s.book.id),
+      nb_books_bought: c.books_bought.length,
+    }));
+  }
+
+  public async getClientById(id: string): Promise<ClientModel | null> {
+    const client: ClientEntity | null =
+      await this.clientRepository.getClientById(id);
+    if (client == null) {
+      return null;
+    }
+    return {
+      ...client,
+      books_bought: client.books_bought?.map((s) => s.book),
+    };
+  }
+
+  public async createClient(data: CreateClientModel): Promise<ClientModel> {
+    return this.clientRepository.createClient(data);
+  }
+
+  public async editClient(
+    data: EditClientModel,
+    id: string,
+  ): Promise<ClientModel | undefined> {
+    return this.clientRepository.editClient(data, id);
+  }
+
+  public async deleteClient(id: string): Promise<void> {
+    return this.clientRepository.deleteClient(id);
+  }
+
+  public async sellBook(data: CreateSellModel): Promise<SellsEntity> {
+    return this.sellsRepository.createSell(data);
+  }
+}
