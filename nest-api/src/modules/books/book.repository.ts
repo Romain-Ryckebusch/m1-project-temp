@@ -20,7 +20,7 @@ export class BookRepository {
       description: e.description,
       pictureUrl: e.pictureUrl,
       yearPublished: e.yearPublished,
-      author: e.author,
+      author: (e.author as AuthorEntity)
     };
   }
 
@@ -32,7 +32,7 @@ export class BookRepository {
     const [rows, total] = await this.bookRepository.findAndCount({
       where: search ? { title: ILike(`%${search}%`) } : {},
       order: { title: 'ASC', id: 'ASC' },
-      relations: { author: true }, // now valid
+      relations: ['author'],
       skip: (page - 1) * limit,
       take: limit,
     });
@@ -43,7 +43,7 @@ export class BookRepository {
   async findById(id: BookId): Promise<BookModel | null> {
     const row = await this.bookRepository.findOne({
       where: { id },
-      relations: { author: true },
+      relations: ['author'],
     });
     return row ? this.toModel(row) : null;
   }
@@ -61,7 +61,7 @@ export class BookRepository {
     const saved = await this.bookRepository.save(entity);
     const withAuthor = await this.bookRepository.findOne({
       where: { id: saved.id },
-      relations: { author: true },
+      relations: ['author'],
     });
     return this.toModel(withAuthor!);
   }

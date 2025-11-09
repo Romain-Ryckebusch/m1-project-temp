@@ -30,16 +30,16 @@ export class BookEntity {
   pictureUrl?: string;
 
   // required by BookModel
-  @Column({ type: 'int' })
+  @Column({ type: 'int', default: 1970 })
   yearPublished!: number;
 
   // relation needed by repo: relations: { author: true }
   @ManyToOne(() => AuthorEntity, (author) => author.books, {
-    nullable: false,
-    onDelete: 'RESTRICT',
+    nullable: true,
+    onDelete: 'SET NULL',
   })
   @JoinColumn({ name: 'authorId' })
-  author!: AuthorEntity;
+  author!: AuthorEntity | null;
 
   // satisfy SellsEntity’s inverse side: (book) => book.sells
   @OneToMany(() => SellsEntity, (sell) => sell.book)
