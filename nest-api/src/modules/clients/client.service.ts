@@ -46,7 +46,20 @@ export class ClientService {
     }
     return {
       ...client,
-      books_bought: client.books_bought?.map((s) => s.book),
+      books_bought: client.books_bought
+      ?.filter((s) => s.book && s.book.author)
+      .map((s) => ({
+        id: s.book.id,
+        title: s.book.title,
+        description: s.book.description,
+        pictureUrl: s.book.pictureUrl,
+        yearPublished: s.book.yearPublished,
+        author: {
+          id: s.book.author!.id,
+          firstName: s.book.author!.firstName,
+          lastName: s.book.author!.lastName,
+        },
+      })),
     };
   }
 
